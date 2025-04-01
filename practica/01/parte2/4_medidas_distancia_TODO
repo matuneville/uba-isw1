@@ -1,0 +1,12 @@
+
+metros := BaseUnit
+	nameForOne: 'metro'
+	nameForMany: 'metros'.
+	
+centimetros := ProportionalDerivedUnit 
+	initializeBaseUnit: metros
+	conversionFactor: 100
+	nameForOne: 'centimetro'
+	nameForMany: 'centimetros'
+	sign: 'cm'.
+	

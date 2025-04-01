@@ -1,0 +1,15 @@
+"1.16 Sumar los números de una colección utilizando primero while, luego do y luego un mensaje de sumar colecciones. Hay un mensaje específico para la suma y otro para acumular elementos llamado inject:into: Solucionarlo utilizando ambos."
+
+|elements totalSum1 totalSum2|
+
+elements := Array with: 1 with: 9 with: 11.
+
+totalSum1 := 0.
+totalSum2 := 0.
+
+totalSum1 := elements sum.
+^totalSum1 21 .
+
+"inject:into: toma un valor inicial (0 aca). Luego aplica la operación sum + each a cada elemento."
+totalSum2 := elements inject: 0 into: [:totalAcumulado :each | totalAcumulado + each]. 
+^totalSum2 21 .

@@ -1,0 +1,20 @@
+| elements index odds elementAtIndex|
+
+elements:= #(1 2 5 6 9 3).
+
+odds := OrderedCollection new.
+
+index := 1.
+
+[index <= elements size]
+whileTrue: [
+	
+	elementAtIndex := elements at: index. "Agregado elemento para evitar doble acceso a array"
+
+	(elementAtIndex odd) ifTrue: [odds add: elementAtIndex].
+
+	index := index +1.
+
+].
+
+^odds

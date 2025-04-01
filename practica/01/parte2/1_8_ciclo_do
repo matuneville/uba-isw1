@@ -1,0 +1,19 @@
+| elements odds |
+
+elements := #(1 2 5 6 9 3).
+
+odds := OrderedCollection new.
+
+"Cualquiera de estas dos funciona, la primera es mas linda"
+
+elements do: [:each | 
+    each odd ifTrue: [odds add: each].
+].
+
+"1 to: elements size do: [:each |
+	| elementAtEach |
+	elementAtEach := elements at: each.
+	(elementAtEach 	odd) ifTrue: [odds add: elementAtEach].
+]."
+
+^odds

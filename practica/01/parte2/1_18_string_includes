@@ -1,0 +1,11 @@
+|texto textoSoloVocales vocales|
+
+texto := 'Holaa, qué tal?'.
+textoSoloVocales := ''.
+vocales := 'aeiouAEIOUáéíóú́Á́ÉÍÓ́Ú'.
+
+textoSoloVocales := texto select: [:caracter |
+	vocales 	includes: caracter
+].
+
+^textoSoloVocales. 'oaauéa' .

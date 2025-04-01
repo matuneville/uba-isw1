@@ -1,0 +1,9 @@
+| elements odds |
+
+elements := #(1 2 5 6 9 3).
+
+odds := OrderedCollection new.
+
+odds := elements select: [:each | each odd].
+
+^odds

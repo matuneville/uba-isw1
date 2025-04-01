@@ -1,0 +1,14 @@
+| x y |
+
+"Los simbolos se describen como objetos que representan secuencias de caracteres utilizadas como nombres en el sistema. Se crean precediendo una cadena de caracteres con el carácter #.
+Los símbolos son únicos y se utilizan comúnmente para identificar nombres de clases, métodos y otras entidades dentro de Smalltalk"
+
+x := #pepe.
+
+y := #pepe.
+
+x = y. 
+ true . 
+
+"Concatenar simbolos"
+#Hello , #World, #!. 'HelloWorld!' .

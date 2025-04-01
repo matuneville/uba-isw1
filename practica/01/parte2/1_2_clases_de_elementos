@@ -1,0 +1,66 @@
+"1.1)  ############################################"
+
+"a) Array de tamaño fijo --------------------"
+
+arr := #(5 4 3 2) "Creo array"
+
+arr at: 2 put: 7 "Modifico valor: x[2] = 7"
+
+arr at: 5 put: 6 "Da error"
+
+
+"b) Collección Ordenada, tamaño variable ---------"
+
+ordCol := OrderedCollection with: 4 with: 3 with: 2
+
+ordCol add: 42 "Agrego elementos"
+
+ordCol add: 2 
+
+ordCol size "Obtengo tamaño de elementos"
+
+
+"c) Set / Conjunto, no repite elementos -----------"
+
+conjunto := Set with: 2 with: 3 with: 4 with: 2. 
+
+conjunto add: 13
+
+conjunto add: 4
+
+conjunto size
+
+"d) Diccionario, elementos key:value ------------"
+
+map := Dictionary new.
+
+map add: #a->13;
+        add:#b->10;
+	 yourself. "yourself para printearlo al final"
+
+map at: #a "Obtengo valor"
+
+map keys "Obtengo keys"
+
+map values "Obtengo valores"
+
+map size
+
+map at: #z ifAbsent: [^24] "Obtengo valor de clave #z, si no está, devuelvo 24"
+
+
+"1.2)  ############################################"
+| ordColThatWasArray setThatWasArray arrayThatWasSet arrayThatWasDictionary|
+
+"Convertir el Array en una OrderedCollection y en un Set."
+ordColThatWasArray := arr asOrderedCollection. an OrderedCollection(5 7 3 2) .
+
+setThatWasArray := arr asSet. a Set(5 3 2 7) .
+
+arrayThatWasSet := conjunto asArray. #(4 3 2 13) .
+
+arrayThatWasDictionary := map asArray . #(10 13) . "Se queda con los valores"
+
+
+
+

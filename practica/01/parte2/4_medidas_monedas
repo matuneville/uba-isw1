@@ -1,0 +1,35 @@
+"Error: multiple compound measure" 
+10 * peso + 10 * dollar.
+
+"Aritmetica de medidas"
+
+10 * peso +( 10 * dollar). 10 * dollars+10 * pesos .
+
+10 * peso +( 10 * dollar) - (2 * dollar). 10 * pesos+8 * dollars .
+
+10 * peso +( 10 * dollar) - (2 * dollar) - (8 * dollar). 10 * pesos .
+
+"Metodos de medidas"
+(10 * peso) amount. 10 .
+(10 * peso) unit. peso .
+
+
+"En numeros"
+1 amount. 1 .
+1 unit.  . "No tienen unidad los numeros"
+
+
+"Pesos por numeros"
+
+(10 * peso) * 5. 50 * pesos .
+
+(10 * peso) * 5 - (10 * peso). 40 * pesos .
+
+(10 * peso) * (5 * peso). 50 * pesos*pesos .
+
+"Creando peso nuevamente"
+
+peso := BaseUnit nameForOne: 'peso' nameForMany: 'pesos' sign: $$.
+peso sign. $$ .
+peso nameForMany. 'pesos' .
+10 * peso. 10 * pesos .

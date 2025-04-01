@@ -1,0 +1,37 @@
+"Con while ------------------------------"
+
+| elements index result evenFound elementAtIndex firstEven|
+
+elements := #(1 2 5 6 9).
+
+index := 1.
+
+evenFound := False.
+
+[index <= elements size and: evenFound = False] whileTrue: [
+	elementAtIndex := elements at: index.
+	elementAtIndex even ifTrue: [
+		firstEven := elementAtIndex.
+		evenFound := True.
+	].
+	index := index + 1.
+].
+
+^firstEven
+
+
+"Con do ------------------------------"
+
+firstEven = -1.
+
+evenFound := False.
+
+elements do: [:each |
+	each even ifTrue: [
+		^each
+	].
+].
+
+
+"Con TO DO ------------------------------"
+

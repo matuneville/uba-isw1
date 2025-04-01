@@ -1,0 +1,36 @@
+"------------------- Bloque sin argumentos -------------------"
+| bloqueSinArgumentos |
+
+bloqueSinArgumentos := [
+	5 + 3.
+	7+7.
+	13
+].
+
+"Retorna la ultima expresion"
+bloqueSinArgumentos value. 13 .
+
+
+"------------------- Bloque con 1 argumento -------------------"
+| bloqueConUnArgumento |
+
+bloqueConUnArgumento := [:x |
+	x*x.
+	77 + -7 abs asNumber.
+	(x + x)*3
+].
+
+"Retorna el resultado de la ultima expresion con nuestro argumento"
+bloqueConUnArgumento value: 2. 12 .
+
+
+"------------------- Bloque con varios argumentos -------------------" 
+| bloqueAppendStrings |
+
+bloqueAppendStrings := [:x : y |
+	|sufijo|
+	sufijo := '!!'.
+	x , y , sufijo].
+
+"Igual que el anterior. Aca uso variables dentro del bloque también."
+bloqueAppendStrings value: 'ho' value: 'la'. 'hola!!' .

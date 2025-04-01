@@ -1,0 +1,46 @@
+DateAndTime fromSeconds: 0. 1901-01-01T00:00:00-03:00 .
+
+(DateAndTime fromSeconds: 0) + (Duration days: 1). 1901-01-02T00:00:00-03:00 .
+
+Time now. 2:56:12.375279 pm .
+
+Time hour: 1 minute: 2 second: 4. 1:02:04 am .
+
+Time now + (Duration hours: 1) "FALLA porque no es un timespan"
+
+(DateAndTime fromSeconds: 0) + (Duration days: 1). 1901-01-02T00:00:00-03:00 .
+
+Date today.  31 March 2025 .
+
+Date newDay: 30 month: 2 year: 3003 . "Error porque febrero no puede tener 30 dias"
+
+Date newDay: 28 month: 2 year: 3003 .  28 February 3003 .
+
+
+"------------- Calendario Gregoriano -------------"
+
+FixedGregorianDate today. March 31, 2025 .
+
+FixedGregorianDate today next next. April 2, 2025 . "2 dias mas que today"
+
+GregorianDateTime now. March 31, 2025 at 15:00:12 .
+
+GregorianDateTime now next. March 31, 2025 at 15:00:17 . "Un segundo más que now"
+
+GregorianDateTime now next distanceFrom: GregorianDateTime now. 1/86400 * days .
+
+(GregorianDateTime now next distanceFrom: GregorianDateTime now) convertTo: second. 1 * second .
+
+TimeOfDay now.  15:04:25 .
+
+TimeOfDay now next: (30 * hour).  "Falla ?"
+
+FixedGregorianDate today year. Year 2025 .
+
+FixedGregorianDate today month. March .
+
+FixedGregorianDate today monthOfYear. March of Year 2025 .
+
+FixedGregorianDate month week.  " TODO"
+
+GregorianDateTime now + 2 * second.

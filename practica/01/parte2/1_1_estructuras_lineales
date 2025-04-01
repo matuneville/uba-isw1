@@ -1,0 +1,49 @@
+"a) Array de tamaño fijo --------------------"
+
+arr := #(5 4 3 2) "Creo array"
+
+arr at: 2 put: 7 "Modifico valor: x[2] = 7"
+
+arr at: 5 put: 6 "Da error"
+
+
+"b) Collección Ordenada, tamaño variable ---------"
+
+ordCol := OrderedCollection with: 4 with: 3 with: 2
+
+ordCol add: 42 "Agrego elementos"
+
+ordCol add: 2 
+
+ordCol size "Obtengo tamaño de elementos"
+
+
+"c) Set / Conjunto, no repite elementos -----------"
+
+x := Set with: 2 with: 3 with: 4 with: 2. 
+
+x add: 13
+
+x add: 4
+
+x size
+
+"d) Diccionario, elementos key:value ------------"
+
+map := Dictionary new.
+
+map add: #a->13;
+        add:#b->10;
+	 yourself. "yourself para printearlo al final"
+
+map at: #a "Obtengo valor"
+
+map keys "Obtengo keys"
+
+map values "Obtengo valores"
+
+map size
+
+map at: #z ifAbsent: [^24] "Obtengo valor de clave #z, si no está, devuelvo 24"
+
+
