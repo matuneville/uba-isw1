@@ -87,22 +87,10 @@ test07CanNotSuspendAnInvalidCustomer
 	self cannotSuspendCustomer: 'George Harrison' afterAddingCustomer: 'John Lennon'
 ! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'NR 9/19/2018 17:57:11'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'MN 4/6/2025 20:39:14'!
 test08CanNotSuspendAnAlreadySuspendedCustomer
-	
-	| customerBook johnLennon |
-			
-	customerBook := CustomerBook new.
-	johnLennon := 'John Lennon'.
-	customerBook addCustomerNamed: johnLennon.
-	customerBook suspendCustomerNamed: johnLennon.
-	
-	[ customerBook suspendCustomerNamed: johnLennon.
-	self fail ]
-		on: CantSuspend 
-		do: [ :anError | 
-			self assert: customerBook numberOfCustomers = 1.
-			self assert: (customerBook includesCustomerNamed: johnLennon) ]
+		
+	self cannotSuspendAlreadySuspendedCustomer: 'John Lennon'.
 ! !
 
 
@@ -136,21 +124,21 @@ cannotSuspendCustomer: aCustomerToSuspend afterAddingCustomer: aCustomerToAdd
 	self addCustomer: aCustomerToAdd suspendCustomer: aCustomerToSuspend suspendAddedCustomer: false! !
 
 
-!CustomerBookTest methodsFor: 'test_helpers_01_02' stamp: 'Matias 4/3/2025 22:22:13'!
-addOrRemoveToTest: addOrRemove customerNamed: aCustomer withTime: timeLimit
+!CustomerBookTest methodsFor: 'test_helpers_01_02' stamp: 'MN 4/6/2025 20:42:13'!
+addOrRemoveToTest: addOrRemoveType customerNamed: aCustomer withTime: timeLimit
 	
 	| customerBook millisecondsBeforeRunning millisecondsAfterRunning actionAdd actionRemove finalAction|
 	
 	customerBook := CustomerBook new.
 	
-	addOrRemove = 'remove' ifTrue: [
+	addOrRemoveType = #Remove ifTrue: [
 		customerBook addCustomerNamed: aCustomer 
 	].
 
 	actionAdd := [customerBook addCustomerNamed: aCustomer].
 	actionRemove := [customerBook removeCustomerNamed: aCustomer ].
 	
-	finalAction := addOrRemove = 'add' ifTrue: actionAdd ifFalse: actionRemove.
+	finalAction := addOrRemoveType = #Add ifTrue: actionAdd ifFalse: actionRemove.
 	
 	millisecondsBeforeRunning := Time millisecondClockValue * millisecond.
 	finalAction value.
@@ -158,13 +146,13 @@ addOrRemoveToTest: addOrRemove customerNamed: aCustomer withTime: timeLimit
 	
 	self assert: (millisecondsAfterRunning-millisecondsBeforeRunning) < (timeLimit * millisecond)! !
 
-!CustomerBookTest methodsFor: 'test_helpers_01_02' stamp: 'Matias 4/3/2025 22:21:19'!
+!CustomerBookTest methodsFor: 'test_helpers_01_02' stamp: 'MN 4/6/2025 20:42:22'!
 addingCustomerNamed: aCustomerToAdd shouldNotTakeMoreThan: timeLimit
-	self addOrRemoveToTest: 'add' customerNamed: aCustomerToAdd withTime: timeLimit! !
+	self addOrRemoveToTest: #Add customerNamed: aCustomerToAdd withTime: timeLimit! !
 
-!CustomerBookTest methodsFor: 'test_helpers_01_02' stamp: 'Matias 4/3/2025 22:21:37'!
+!CustomerBookTest methodsFor: 'test_helpers_01_02' stamp: 'MN 4/6/2025 20:42:27'!
 removingExistingCustomerNamed: aCustomerToAddAndRemove shouldNotTakeMoreThan: timeLimit
-	self addOrRemoveToTest: 'remove' customerNamed: aCustomerToAddAndRemove withTime: timeLimit! !
+	self addOrRemoveToTest: #Remove customerNamed: aCustomerToAddAndRemove withTime: timeLimit! !
 
 
 !CustomerBookTest methodsFor: 'test_helpers_05_06' stamp: 'Matias 4/3/2025 22:41:48'!
@@ -253,26 +241,18 @@ numberOfSuspendedCustomers
 	
 	^suspended size! !
 
-!CustomerBook methodsFor: 'customer management' stamp: 'Matias 4/3/2025 15:32:23'!
+!CustomerBook methodsFor: 'customer management' stamp: 'MN 4/6/2025 20:33:55'!
 removeCustomerNamed: aName 
 
-	| resultOfRemoval collectionsToCheck|
-	
-	collectionsToCheck := Array with: active with: suspended.
-	
-	collectionsToCheck do: [:eachCollection |
-		resultOfRemoval := self removeCustomerNamed: aName from: eachCollection.
-
-		resultOfRemoval ifNotNil: [
-			^resultOfRemoval
+	^ self removeCustomerNamed: aName from: active ifAbsentThen: [
+		self removeCustomerNamed: aName from: suspended ifAbsentThen: [
+			^ NotFound signal.
 		].
 	].
-	
-	^ NotFound signal.
 ! !
 
-!CustomerBook methodsFor: 'customer management' stamp: 'Matias 4/3/2025 10:00:10'!
-removeCustomerNamed: aName from: aCollection
+!CustomerBook methodsFor: 'customer management' stamp: 'MN 4/6/2025 20:35:48'!
+removeCustomerNamed: aName from: aCollection ifAbsentThen: aClosure 
 	
 	1 to: aCollection size do: [:index |
 		| nameAtIndex |
@@ -286,7 +266,7 @@ removeCustomerNamed: aName from: aCollection
 		] 
 	].
 
-	^nil! !
+	^aClosure value! !
 
 !CustomerBook methodsFor: 'customer management' stamp: 'HernanWilkinson 7/6/2011 17:52'!
 signalCustomerAlreadyExists 
