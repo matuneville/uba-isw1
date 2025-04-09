@@ -21,33 +21,43 @@ TestCase subclass: #CustomerBookTest
 	poolDictionaries: ''
 	category: 'CodigoRepetido-Ejercicio'!
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'Matias 4/3/2025 20:39:56'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'MN 4/9/2025 15:22:09'!
 test01AddingCustomerShouldNotTakeMoreThan50Milliseconds
-	
-	self addingCustomerNamed: 'John Lennon' shouldNotTakeMoreThan: 50! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'Matias 4/3/2025 20:39:36'!
+	| customerBook |
+	
+	customerBook := CustomerBook new.
+	
+	self should: [customerBook addCustomerNamed: 'John Lennon'] takeLessTimeThat: 50*millisecond.! !
+
+!CustomerBookTest methodsFor: 'testing' stamp: 'MN 4/9/2025 15:22:56'!
 test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
 
-	self removingExistingCustomerNamed: 'Paul McCartney' shouldNotTakeMoreThan: 100
+	| customerBook paulMcCartney |
 	
+	customerBook := CustomerBook new.
+	paulMcCartney := 'Paul McCartney'.
+	
+	customerBook addCustomerNamed: paulMcCartney.
+	  
+	self should: [customerBook removeCustomerNamed: paulMcCartney] takeLessTimeThat: 100*millisecond.
 ! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'HernanWilkinson 5/9/2012 18:12'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'MN 4/9/2025 15:40:26'!
 test03CanNotAddACustomerWithEmptyName 
 
 	| customerBook |
 			
 	customerBook := CustomerBook new.
-
-	[ customerBook addCustomerNamed: ''.
-	self fail ]
-		on: Error 
-		do: [ :anError | 
+	
+	self
+		should: [ customerBook addCustomerNamed: ''.]
+		raise: Error
+		assert: [ :anError | 
 			self assert: anError messageText = CustomerBook customerCanNotBeEmptyErrorMessage.
 			self assert: customerBook isEmpty ]! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'HAW 8/28/2017 08:57:25'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'MN 4/9/2025 15:40:10'!
 test04CanNotRemoveAnInvalidCustomer
 	
 	| customerBook johnLennon |
@@ -56,108 +66,18 @@ test04CanNotRemoveAnInvalidCustomer
 	johnLennon := 'John Lennon'.
 	customerBook addCustomerNamed: johnLennon.
 	
-	[ customerBook removeCustomerNamed: 'Paul McCartney'.
-	self fail ]
-		on: NotFound 
-		do: [ :anError | 
+	self
+		should: [ customerBook removeCustomerNamed: 'Paul McCartney' ]
+		raise: NotFound 
+		assert: [ :anError | 
 			self assert: customerBook numberOfCustomers = 1.
 			self assert: (customerBook includesCustomerNamed: johnLennon) ]
 ! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'Matias 4/3/2025 22:40:48'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'MN 4/9/2025 15:55:17'!
 test05SuspendingACustomerShouldNotRemoveItFromCustomerBook
 
-	self removeCustomerAfterAddAndSuspend: false
-
-	
-! !
-
-!CustomerBookTest methodsFor: 'testing' stamp: 'Matias 4/3/2025 22:41:14'!
-test06RemovingASuspendedCustomerShouldRemoveItFromCustomerBook
-
-	self removeCustomerAfterAddAndSuspend: true.
-
-
-	
-! !
-
-!CustomerBookTest methodsFor: 'testing' stamp: 'Matias 4/3/2025 20:06:59'!
-test07CanNotSuspendAnInvalidCustomer
-	
-	self cannotSuspendCustomer: 'George Harrison' afterAddingCustomer: 'John Lennon'
-! !
-
-!CustomerBookTest methodsFor: 'testing' stamp: 'MN 4/6/2025 20:39:14'!
-test08CanNotSuspendAnAlreadySuspendedCustomer
-		
-	self cannotSuspendAlreadySuspendedCustomer: 'John Lennon'.
-! !
-
-
-!CustomerBookTest methodsFor: 'test_helpers_07_08' stamp: 'Matias 4/3/2025 20:33:59'!
-addCustomer: aCustomerToAdd suspendCustomer: aCustomerToSuspend suspendAddedCustomer: addedCustomerMustBeSuspended
-	
-	| customerBook |
-			
-	customerBook := CustomerBook new.
-	
-	customerBook addCustomerNamed: aCustomerToAdd.
-	
-	addedCustomerMustBeSuspended ifTrue: [customerBook suspendCustomerNamed: aCustomerToAdd].
-	
-	[ customerBook suspendCustomerNamed: aCustomerToSuspend. 
-	self fail ]
-		on: CantSuspend 
-		do: [ :anError | 
-			self assert: customerBook numberOfCustomers = 1.
-			self assert: (customerBook includesCustomerNamed: aCustomerToAdd) ]
-	! !
-
-!CustomerBookTest methodsFor: 'test_helpers_07_08' stamp: 'Matias 4/3/2025 20:30:07'!
-cannotSuspendAlreadySuspendedCustomer: aCustomerToAddAndSuspend
-
-	self addCustomer: aCustomerToAddAndSuspend suspendCustomer: aCustomerToAddAndSuspend suspendAddedCustomer: true! !
-
-!CustomerBookTest methodsFor: 'test_helpers_07_08' stamp: 'Matias 4/3/2025 20:29:45'!
-cannotSuspendCustomer: aCustomerToSuspend afterAddingCustomer: aCustomerToAdd
-	
-	self addCustomer: aCustomerToAdd suspendCustomer: aCustomerToSuspend suspendAddedCustomer: false! !
-
-
-!CustomerBookTest methodsFor: 'test_helpers_01_02' stamp: 'MN 4/6/2025 20:42:13'!
-addOrRemoveToTest: addOrRemoveType customerNamed: aCustomer withTime: timeLimit
-	
-	| customerBook millisecondsBeforeRunning millisecondsAfterRunning actionAdd actionRemove finalAction|
-	
-	customerBook := CustomerBook new.
-	
-	addOrRemoveType = #Remove ifTrue: [
-		customerBook addCustomerNamed: aCustomer 
-	].
-
-	actionAdd := [customerBook addCustomerNamed: aCustomer].
-	actionRemove := [customerBook removeCustomerNamed: aCustomer ].
-	
-	finalAction := addOrRemoveType = #Add ifTrue: actionAdd ifFalse: actionRemove.
-	
-	millisecondsBeforeRunning := Time millisecondClockValue * millisecond.
-	finalAction value.
-	millisecondsAfterRunning := Time millisecondClockValue * millisecond.
-	
-	self assert: (millisecondsAfterRunning-millisecondsBeforeRunning) < (timeLimit * millisecond)! !
-
-!CustomerBookTest methodsFor: 'test_helpers_01_02' stamp: 'MN 4/6/2025 20:42:22'!
-addingCustomerNamed: aCustomerToAdd shouldNotTakeMoreThan: timeLimit
-	self addOrRemoveToTest: #Add customerNamed: aCustomerToAdd withTime: timeLimit! !
-
-!CustomerBookTest methodsFor: 'test_helpers_01_02' stamp: 'MN 4/6/2025 20:42:27'!
-removingExistingCustomerNamed: aCustomerToAddAndRemove shouldNotTakeMoreThan: timeLimit
-	self addOrRemoveToTest: #Remove customerNamed: aCustomerToAddAndRemove withTime: timeLimit! !
-
-
-!CustomerBookTest methodsFor: 'test_helpers_05_06' stamp: 'Matias 4/3/2025 22:41:48'!
-removeCustomerAfterAddAndSuspend: aBoolean
-	| customerBook paulMcCartney numberOfCustomersExpected numberOfSuspendedCustomersExpected finalAssert |
+	| customerBook paulMcCartney|
 	
 	customerBook := CustomerBook new.
 	paulMcCartney := 'Paul McCartney'.
@@ -165,22 +85,111 @@ removeCustomerAfterAddAndSuspend: aBoolean
 	customerBook addCustomerNamed: paulMcCartney.
 	customerBook suspendCustomerNamed: paulMcCartney.
 	
-	numberOfSuspendedCustomersExpected := 1.
-	numberOfCustomersExpected := 1.
+	self
+		should: customerBook
+		haveANumberOfActiveCustomersOf: 0
+		andANumberOfSuspendedCustomersOf: 1.
+
+	self assert: (customerBook includesCustomerNamed: paulMcCartney).
+
 	
-	finalAssert := [self assert: (customerBook includesCustomerNamed: 'Paul McCartney')].
+! !
+
+!CustomerBookTest methodsFor: 'testing' stamp: 'MN 4/9/2025 15:55:26'!
+test06RemovingASuspendedCustomerShouldRemoveItFromCustomerBook
+
+	| customerBook paulMcCartney|
 	
-	aBoolean ifTrue: [
-		customerBook removeCustomerNamed: paulMcCartney.
-		numberOfSuspendedCustomersExpected := 0.
-		numberOfCustomersExpected := 0.
-		finalAssert := [ self deny: (customerBook includesCustomerNamed: 'Paul McCartney') ].
-	].
+	customerBook := CustomerBook new.
+	paulMcCartney := 'Paul McCartney'.
 	
-	self assert: 0 equals: customerBook numberOfActiveCustomers.
-	self assert: numberOfSuspendedCustomersExpected equals: customerBook numberOfSuspendedCustomers.
-	self assert: numberOfCustomersExpected equals: customerBook numberOfCustomers.
-	finalAssert value.! !
+	customerBook addCustomerNamed: paulMcCartney.
+	customerBook suspendCustomerNamed: paulMcCartney.
+	customerBook removeCustomerNamed: paulMcCartney.
+	
+	self
+		should: customerBook
+		haveANumberOfActiveCustomersOf: 0
+		andANumberOfSuspendedCustomersOf: 0.
+		
+	self deny: (customerBook includesCustomerNamed: paulMcCartney).
+
+
+	
+! !
+
+!CustomerBookTest methodsFor: 'testing' stamp: 'MN 4/9/2025 15:43:41'!
+test07CanNotSuspendAnInvalidCustomer
+	
+	| customerBook johnLennon |
+			
+	customerBook := CustomerBook new.
+	johnLennon := 'John Lennon'.
+	customerBook addCustomerNamed: johnLennon.
+	
+	self
+		should:[ customerBook suspendCustomerNamed: 'George Harrison' ]
+		raise: CantSuspend 
+		assert: [ :anError | 
+			self assert: customerBook numberOfCustomers = 1.
+			self assert: (customerBook includesCustomerNamed: johnLennon) ]
+! !
+
+!CustomerBookTest methodsFor: 'testing' stamp: 'MN 4/9/2025 15:44:24'!
+test08CanNotSuspendAnAlreadySuspendedCustomer
+		
+	| customerBook johnLennon |
+			
+	customerBook := CustomerBook new.
+	johnLennon := 'John Lennon'.
+	customerBook addCustomerNamed: johnLennon.
+	customerBook suspendCustomerNamed: johnLennon.
+	
+	self
+		should:[ customerBook suspendCustomerNamed: johnLennon ]
+		raise: CantSuspend 
+		assert: [ :anError | 
+			self assert: customerBook numberOfCustomers = 1.
+			self assert: (customerBook includesCustomerNamed: johnLennon) ]
+! !
+
+
+!CustomerBookTest methodsFor: 'asserts' stamp: 'MN 4/9/2025 15:54:58'!
+should: aCustomerBook haveANumberOfActiveCustomersOf: activeCustomers andANumberOfSuspendedCustomersOf: suspendedCustomers .
+	
+	self assert: activeCustomers equals: aCustomerBook numberOfActiveCustomers.
+	self assert: suspendedCustomers equals: aCustomerBook numberOfSuspendedCustomers.
+	self assert: activeCustomers + suspendedCustomers equals: aCustomerBook numberOfCustomers.! !
+
+!CustomerBookTest methodsFor: 'asserts' stamp: 'MN 4/9/2025 15:42:31'!
+should: aCodeBlockThatShouldFail raise: anExceptionType assert: aCodeBlockToVerificate 
+	"Block1 ON Error DO Block2
+		===
+	TRY:
+		Block1
+	CATCH Error:
+		Block2 
+	
+	El primer bloque debería fallar. Si falla, entonces chequea si se da la excepción del parámetro, y,
+	en se caso, chequea el bloque de verificación para ver que esté todo bien.
+	
+	El self fail sirve para que, si el bloque que debía fallar NO falla, entonces falla el test, ya que
+	no ocurrió lo esperado. También falla el test si no vale el bloque de verificación"
+	
+	[aCodeBlockThatShouldFail value.
+	self fail]
+		on: anExceptionType 
+		do: aCodeBlockToVerificate! !
+
+!CustomerBookTest methodsFor: 'asserts' stamp: 'MN 4/9/2025 15:21:35'!
+should: aCodeBlockToTime takeLessTimeThat: aTimeLimit
+	| millisecondsAfterRunning millisecondsBeforeRunning |
+	
+	millisecondsBeforeRunning := Time millisecondClockValue * millisecond.
+	aCodeBlockToTime value.
+	millisecondsAfterRunning := Time millisecondClockValue * millisecond.
+	
+	self assert: (millisecondsAfterRunning-millisecondsBeforeRunning) < aTimeLimit.! !
 
 
 !classDefinition: #CustomerBook category: #'CodigoRepetido-Ejercicio'!
