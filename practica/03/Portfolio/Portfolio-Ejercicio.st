@@ -76,15 +76,24 @@ valueFor: anAccount
 
 !classDefinition: #Portfolio category: #'Portfolio-Ejercicio'!
 Object subclass: #Portfolio
-	instanceVariableNames: 'accounts'
+	instanceVariableNames: 'accounts portfolios parent treeRoots'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!Portfolio methodsFor: 'balance' stamp: 'MN 5/29/2025 16:06:28'!
+!Portfolio methodsFor: 'balance' stamp: 'MN 5/31/2025 10:25:23'!
 balance
-	^accounts sum: [:eachAccount | eachAccount balance ] ifEmpty: [0].! !
 
+	^ (accounts sum: [:eachAccount | eachAccount balance ] ifEmpty: [0]) +
+	(portfolios sum: [:eachAccount | eachAccount balance ] ifEmpty: [0]).! !
+
+
+!Portfolio methodsFor: 'initialization' stamp: 'MN 6/3/2025 15:21:10'!
+initialize
+	accounts := Set new.
+	portfolios := Set new.
+	parent := nil.
+	treeRoots := Set new.! !
 
 !Portfolio methodsFor: 'initialization' stamp: 'MN 5/29/2025 15:51:58'!
 initializeNewFor: aCollectionOfAccounts 
@@ -92,24 +101,105 @@ initializeNewFor: aCollectionOfAccounts
 	accounts := aCollectionOfAccounts.! !
 
 
-!Portfolio methodsFor: 'modifying' stamp: 'MN 5/29/2025 20:09:06'!
+!Portfolio methodsFor: 'modifying' stamp: 'MN 5/31/2025 15:41:57'!
 addAccount: anAccount 
 	
-	self assertCantAddAlreadyPresentAccount: anAccount.
-	
+	self assertCantAddAccountAlreadyPresentInTree: anAccount.
+		
 	accounts add: anAccount.! !
 
-!Portfolio methodsFor: 'modifying' stamp: 'MN 5/29/2025 20:09:06'!
-assertCantAddAlreadyPresentAccount: anAccount
+!Portfolio methodsFor: 'modifying' stamp: 'MN 6/3/2025 15:27:40'!
+addPortfolio: aPortfolio
+	
+	self ensureThereIsNoChildrenFrom: aPortfolio.
+	
+	portfolios add: aPortfolio.
+
+	self addTreeRootsFor: aPortfolio.
+
+! !
+
+!Portfolio methodsFor: 'modifying' stamp: 'MN 6/3/2025 15:21:10'!
+addTreeParents: aPortfolio 
+	treeRoots addAll: aPortfolio.! !
+
+!Portfolio methodsFor: 'modifying' stamp: 'MN 6/3/2025 15:21:10'!
+addTreeRootsFor: aPortfolio
+
+	^ (treeRoots isEmpty) ifTrue:[
+		aPortfolio addTreeParents: (Set with: self).
+	] ifFalse: [
+		aPortfolio addTreeParents: treeRoots.
+	]! !
+
+!Portfolio methodsFor: 'modifying' stamp: 'MN 6/3/2025 15:27:20'!
+ensureThereIsNoChildrenFrom: aPortfolio
+
+	^ (treeRoots isEmpty) ifTrue:[
+		self assertDoesNotIncludesChildPortfolioFrom: aPortfolio.
+	] ifFalse: [
+		treeRoots do: [:eachParent|
+			eachParent assertDoesNotIncludesChildPortfolioFrom: aPortfolio.
+		].
+	]! !
+
+!Portfolio methodsFor: 'modifying' stamp: 'MN 5/31/2025 12:35:28'!
+setAsParent: aPortfolio
+
+	parent := aPortfolio.! !
+
+
+
+!Portfolio methodsFor: 'assertions' stamp: 'MN 5/31/2025 12:28:47'!
+assertCantAddAccountAlreadyPresentInTree: anAccount
 
 	^ (accounts includes: anAccount) ifTrue: [
 		self error: 'Portfolios cannot be added accounts that they already have'.
 	]! !
 
+!Portfolio methodsFor: 'assertions' stamp: 'MN 6/3/2025 15:22:31'!
+assertCantAddPortfolioAlreadyPresentInTree: aPortfolio 
+	treeRoots assertDoesNotIncludesChildPortfolioFrom: aPortfolio.! !
 
-!Portfolio methodsFor: 'testing' stamp: 'MN 5/29/2025 19:29:26'!
-hasAnyAccount
-	^ accounts isEmpty not.! !
+!Portfolio methodsFor: 'assertions' stamp: 'MN 6/3/2025 15:24:08'!
+assertDoesNotIncludesChildPortfolioFrom: aPortfolio
+	
+	self == aPortfolio ifTrue:[
+		self errorPortfoliosCannotContainThemselvesInTheTree.
+	].
+
+	((aPortfolio getChildrenPortfolios) includes: self) ifTrue:[
+		self errorPortfoliosCannotContainThemselvesInTheTree.
+	].
+	
+	portfolios do:[:eachPortfolioChild |
+		eachPortfolioChild == aPortfolio ifTrue:[
+			self errorPortfoliosCannotContainThemselvesInTheTree.
+		]
+		ifFalse:[
+			eachPortfolioChild assertDoesNotIncludesChildPortfolioFrom: aPortfolio.
+		].
+	].! !
+
+!Portfolio methodsFor: 'assertions' stamp: 'MN 6/1/2025 20:10:20'!
+errorPortfoliosCannotContainThemselvesInTheTree
+
+	^ self error: 'Portfolios cannot contain themselves in the tree'! !
+
+
+!Portfolio methodsFor: 'private' stamp: 'MN 6/3/2025 15:26:06'!
+getChildrenPortfolios
+
+	| children |
+	
+	children := Set new.
+	
+	portfolios do: [:eachPortfolio |
+		children add: eachPortfolio.
+		children addAll: (eachPortfolio getChildrenPortfolios).
+	].
+
+	^ children.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -193,111 +283,191 @@ TestCase subclass: #PortfolioTest
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'MN 5/29/2025 15:55:17'!
+!PortfolioTest methodsFor: 'tests' stamp: 'MN 5/31/2025 10:01:23'!
 test01PortofolioWithoutAccountsHas0Balance
 	| portfolio emptyCollection |
 	
 	emptyCollection := OrderedCollection new.
 	
-	portfolio := Portfolio newFor: emptyCollection.
+	portfolio := Portfolio new.
 	
 	self assert: portfolio balance equals: 0.! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'MN 5/29/2025 15:51:01'!
+!PortfolioTest methodsFor: 'tests' stamp: 'MN 5/31/2025 10:05:49'!
 test02PortofolioWithOneAccountHasItsOnlyAccountBalanceAsBalance
-	| portfolio receptiveAccount collectionOfAccounts |
+	| portfolio account |
 
-	receptiveAccount := ReceptiveAccount new.
-	collectionOfAccounts := OrderedCollection with: receptiveAccount.
+	account := ReceptiveAccount new.
 	
-	portfolio := Portfolio newFor: collectionOfAccounts.
+	portfolio := Portfolio new.
+	portfolio addAccount: account.
 	
-	Deposit register: 100 on: receptiveAccount.
-	Withdraw register: 25 on: receptiveAccount.
+	Deposit register: 100 on: account.
+	Withdraw register: 25 on: account.
 	
 	self assert: portfolio balance equals: 75.! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'MN 5/29/2025 16:06:09'!
+!PortfolioTest methodsFor: 'tests' stamp: 'MN 5/31/2025 10:05:36'!
 test03PortofolioWithManyAccountHasItsAccountsBalanceSumAsBalance
-	| portfolio receptiveAccountOne receptiveAccountTwo receptiveAccountThree collectionOfAccounts |
+	| portfolio accountOne accountTwo accountThree |
 
-	receptiveAccountOne := ReceptiveAccount new.
-	receptiveAccountTwo := ReceptiveAccount new.
-	receptiveAccountThree := ReceptiveAccount new.
+	accountOne := ReceptiveAccount new.
+	accountTwo := ReceptiveAccount new.
+	accountThree := ReceptiveAccount new.
 	
-	collectionOfAccounts := OrderedCollection
-		with: receptiveAccountOne
-		with: receptiveAccountTwo
-		with: receptiveAccountThree.
+	portfolio := Portfolio new.
+	portfolio
+		addAccount: accountOne;
+		addAccount: accountTwo;
+		addAccount: accountThree.
 	
-	portfolio := Portfolio newFor: collectionOfAccounts.
+	Deposit register: 100 on: accountOne.
+	Withdraw register: 25 on: accountOne.
 	
-	Deposit register: 100 on: receptiveAccountOne.
-	Withdraw register: 25 on: receptiveAccountOne.
-	"Balance 75"
+	Withdraw register: 25 on: accountTwo.
 	
-	Withdraw register: 25 on: receptiveAccountTwo.
-	"Balance -25"
+	Deposit register: 67 on: accountThree.
 	
-	Deposit register: 67 on: receptiveAccountThree.
-	"Balance 67"
-	
-	self assert: portfolio balance equals: (75 - 25 + 67).! !
+	self
+		assert: portfolio balance
+		equals: (accountOne balance + accountTwo balance + accountThree balance).! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'MN 5/29/2025 19:58:06'!
-test04PortofolioCanStartWithoutAccountsAndThenAddThemAccounts
-	| portfolio receptiveAccount emptyCollection |
+!PortfolioTest methodsFor: 'tests' stamp: 'MN 5/31/2025 10:07:22'!
+test04PortfoliosCantBeAddedDuplicateAccounts
+	| portfolio account |
 
-	receptiveAccount := ReceptiveAccount new.
-	emptyCollection := OrderedCollection new.
-	
-	portfolio := Portfolio newFor: emptyCollection.
-	
-	portfolio addAccount: receptiveAccount.
-	
-	self assert: portfolio hasAnyAccount! !
+	account := ReceptiveAccount new.
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'MN 5/29/2025 19:44:28'!
-test05PortofolioCantBeCreatedWithRepeatedAccounts
-	| portfolio receptiveAccount aCollectionOfAccounts |
-
-	receptiveAccount := ReceptiveAccount new.
-	
-	aCollectionOfAccounts := OrderedCollection
-		with: receptiveAccount
-		with: receptiveAccount.
+	portfolio := Portfolio new.
 		
 	self
-		should: [ portfolio := Portfolio newFor: aCollectionOfAccounts. ]
-		raise: Error
-		withMessageText: 'Portfolios cannot have duplicate accounts'.! !
-
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'MN 5/29/2025 20:02:21'!
-test06DuplicateAccountsCantBeAddedToPortfolios
-	| portfolio receptiveAccount aCollectionOfAccounts |
-
-	receptiveAccount := ReceptiveAccount new.
-	
-	aCollectionOfAccounts := OrderedCollection
-		with: receptiveAccount.
-	
-	portfolio := Portfolio newFor: aCollectionOfAccounts.
-		
-	self
-		should: [ portfolio addAccount: receptiveAccount. ]
+		should: [ portfolio addAccount: account; addAccount: account. ]
 		raise: Error
 		withMessageText: 'Portfolios cannot be added accounts that they already have'.! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'MN 5/29/2025 20:14:05'!
-test07PortfoliosCanBeAddedToPortfolio
-	| portfolio anotherPortfolio collectionOfPortfolios |
+!PortfolioTest methodsFor: 'tests' stamp: 'MN 5/31/2025 10:20:14'!
+test05PortfolioWithOnePortfolioHasItsOnlyPortfolioBalanceAsBalance
+	| portfolioContained portfolioContainer account |
 
-	anotherPortfolio := Portfolio newFor: (OrderedCollection new).
-	collectionOfPortfolios := OrderedCollection with: anotherPortfolio.
+	account := ReceptiveAccount new.
 	
-	portfolio := Portfolio newFor: collectionOfPortfolios.
+	portfolioContained := Portfolio new.
+	portfolioContainer := Portfolio new.
 	
-	self assert: portfolio hasAnyAccount.! !
+	portfolioContained addAccount: account.
+	
+	Deposit register: 100 on: account.
+	Withdraw register: 25 on: account.
+	
+	portfolioContainer addPortfolio: portfolioContained.
+	
+	self
+		assert: portfolioContainer balance
+		equals: portfolioContained balance.! !
+
+!PortfolioTest methodsFor: 'tests' stamp: 'MN 5/31/2025 10:38:24'!
+test06PortfolioWithManyPortfoliosAndManyAccountsHasItsBalanceSumAsBalance
+	| portfolioOne portfolioTwo portfolioThree accountOne accountTwo accountThree accountFour |
+	
+	"
+		__P1__
+	  /   |  \
+	 P2  a3  P3
+	 |       / \ 
+	a1      a2 a4
+	"
+
+	accountOne := ReceptiveAccount new.
+	accountTwo := ReceptiveAccount new.
+	accountThree := ReceptiveAccount new.
+	accountFour := ReceptiveAccount new.
+	
+	portfolioTwo := Portfolio new.
+	portfolioOne := Portfolio new.
+	portfolioThree := Portfolio new.
+	
+	portfolioTwo addAccount: accountOne.
+	portfolioThree addAccount: accountTwo; addAccount: accountFour.
+	portfolioOne addAccount: accountThree.
+	
+	Deposit register: 100 on: accountOne.
+	Withdraw register: 25 on: accountOne.
+	
+	Deposit register: 80 on: accountTwo.
+	
+	Withdraw register: 15 on: accountThree.
+	
+	Deposit register: 50 on: accountFour.
+	Withdraw register: 10 on: accountFour.
+		
+	portfolioOne
+		addPortfolio: portfolioTwo;
+		addPortfolio: portfolioThree.
+	
+	self
+		assert: portfolioOne balance
+		equals: (portfolioTwo balance + portfolioThree balance + accountThree balance).! !
+
+!PortfolioTest methodsFor: 'tests' stamp: 'MN 5/31/2025 10:40:45'!
+test07PortfolioCantBeAddedHimself
+	| portfolio |
+
+	portfolio := Portfolio new.
+		
+	self
+		should: [ portfolio addPortfolio: portfolio. ]
+		raise: Error
+		withMessageText: 'Portfolios cannot contain themselves in the tree'.! !
+
+!PortfolioTest methodsFor: 'tests' stamp: 'MN 5/31/2025 15:50:21'!
+test08PortfolioCantBeAddedHimselfDeeperInTheTree
+	| portfolio anotherPortfolio |
+	"
+	P1 --> P2 --> P1
+	"
+
+	portfolio := Portfolio new.
+	anotherPortfolio := Portfolio new.
+	
+	portfolio addPortfolio: anotherPortfolio.
+		
+	self
+		should: [ anotherPortfolio addPortfolio: portfolio. ]
+		raise: Error
+		withMessageText: 'Portfolios cannot contain themselves in the tree'.! !
+
+!PortfolioTest methodsFor: 'tests' stamp: 'MN 6/1/2025 20:21:48'!
+test09PortfolioCantMakeANewTreeWithDuplicatePortfolios
+	| p1 p2 p3 p4 p5 |
+	"
+	P3------> P5
+	   \--> P2
+	
+	P1 --> P2 --> P4
+	
+	
+        P3----> P5
+	   /   \--> P2
+	P5	     
+      \
+		P1 --> P2 --> P4
+	"
+
+	p1 := Portfolio new.
+	p2 := Portfolio new.
+	p3 := Portfolio new.
+	p4 := Portfolio new.
+	p5 := Portfolio new.
+	
+	p1 addPortfolio: p2.
+	p2 addPortfolio: p4.
+	p3 addPortfolio: p2.
+	p3 addPortfolio: p5.
+	
+	self
+		should: [ p5 addPortfolio: p1. ]
+		raise: Error
+		withMessageText: 'Portfolios cannot contain themselves in the tree'.! !
 
 
 !classDefinition: #ReceptiveAccountTest category: #'Portfolio-Ejercicio'!
