@@ -1,4 +1,96 @@
-!classDefinition: #TusLibrosTest category: #'TusLibros-com'!
+!classDefinition: #CreditCardTest category: 'TusLibros-com'!
+TestCase subclass: #CreditCardTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros-com'!
+
+!CreditCardTest methodsFor: 'tests' stamp: 'n 6/13/2025 19:51:16'!
+test01CardNumberMustBe16DigitsLong
+		
+	self
+		should: [CreditCard withNumber: 1234 ownerName: 'JOHN DOE' expirationDate: 01/26 ]
+		raise: Error - MessageNotUnderstood 
+		description: 'Credit card number must be 16 digits long'.
+	 ! !
+
+!CreditCardTest methodsFor: 'tests' stamp: 'n 6/13/2025 19:51:16'!
+test02CardNumberMustBeInteger
+	
+	self
+		should: [ CreditCard withNumber: 'pepe' ownerName: 'JOHN DOE' expirationDate: 01/26 ]
+		raise: Error - MessageNotUnderstood 
+		description: 'Credit card number must be integer'.
+	 ! !
+
+!CreditCardTest methodsFor: 'tests' stamp: 'n 6/13/2025 19:51:16'!
+test03CardNumberMustBeStrictlyPositive
+
+	self
+		should: [ CreditCard withNumber: -111111111111111 ownerName: 'JOHN DOE' expirationDate: 01/26 ]
+		raise: Error - MessageNotUnderstood 
+		description: 'Credit card number must be strictly positive'.
+	 ! !
+
+!CreditCardTest methodsFor: 'tests' stamp: 'n 6/13/2025 19:51:16'!
+test04ExpirationDateIsBeforeCurrentDate
+	
+	self
+		should: [ CreditCard withNumber: -111111111111111 ownerName: 'JOHN DOE' expirationDate: 01/26 ]
+		raise: Error - MessageNotUnderstood 
+		description: 'Credit card number must be strictly positive'.
+	 ! !
+
+!CreditCardTest methodsFor: 'tests' stamp: 'n 6/13/2025 19:56:58'!
+test05OwnerNameMustBeString
+
+	self
+		should: [ CreditCard withNumber: 1111111111111111 ownerName: 1213 expirationDate: 01/24 ]
+		raise: Error - MessageNotUnderstood 
+		description: 'Owner name must be string'.
+	 ! !
+
+!CreditCardTest methodsFor: 'tests' stamp: 'n 6/13/2025 19:57:02'!
+test06OwnerNameMustBeMax30CharactersLong
+
+	self
+		should: [ CreditCard
+			withNumber: 1111111111111111
+			ownerName: 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
+			expirationDate: 01/24 ]
+		raise: Error - MessageNotUnderstood 
+		description: 'Owner name must be max 30 characters long'.
+	 ! !
+
+!CreditCardTest methodsFor: 'tests' stamp: 'n 6/13/2025 20:11:29'!
+test07ExpirationDateMustBeGregorian
+
+	self
+		should: [ CreditCard
+			withNumber: 1111111111111111
+			ownerName: 'JOHN DOE'
+			expirationDate: 'pepe']
+		raise: Error - MessageNotUnderstood 
+		description: 'Expiration date must be gregorian'.
+
+	 ! !
+
+!CreditCardTest methodsFor: 'tests' stamp: 'n 6/13/2025 20:39:36'!
+test08ExpirationDateMustBeAfterCurrentDate
+
+	self
+		should: [ CreditCard
+			withNumber: 1111111111111111
+			ownerName: 'JOHN DOE'
+			expirationDate: (GregorianMonthOfYear yearNumber: 2025 monthNumber: 02)
+			]
+		raise: Error
+		description: 'Expiration date must be after current date'
+
+	 ! !
+
+
+!classDefinition: #TusLibrosTest category: 'TusLibros-com'!
 TestCase subclass: #TusLibrosTest
 	instanceVariableNames: ''
 	classVariableNames: ''
@@ -26,14 +118,14 @@ createCatalogueWithBookAandB
 	^ Set with: self createBookA with: self createBookB.! !
 
 
-!classDefinition: #CashierTest category: #'TusLibros-com'!
+!classDefinition: #CashierTest category: 'TusLibros-com'!
 TusLibrosTest subclass: #CashierTest
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros-com'!
 
-!CashierTest methodsFor: 'tests' stamp: 'MN 6/15/2025 22:36:22'!
+!CashierTest methodsFor: 'tests' stamp: 'MN 6/16/2025 11:03:10'!
 test01TotalCheckoutPriceIsPriceAndSingleUnitOfUniqueBookOfCart
 
 	| priceList cashier cart |
@@ -45,9 +137,9 @@ test01TotalCheckoutPriceIsPriceAndSingleUnitOfUniqueBookOfCart
 	
 	cashier := Cashier newWith: priceList.
 	
-	self assert: (cashier checkout: cart with: nil) equals: 15.! !
+	self assert: (cashier checkout: cart with: self createCreditCard ) equals: 15.! !
 
-!CashierTest methodsFor: 'tests' stamp: 'MN 6/15/2025 22:36:22'!
+!CashierTest methodsFor: 'tests' stamp: 'MN 6/16/2025 11:03:10'!
 test02TotalCheckoutPriceIsProductOfPriceAndManyUnitsOfUniqueBookOfCart
 
 	| priceList cashier cart |
@@ -59,9 +151,9 @@ test02TotalCheckoutPriceIsProductOfPriceAndManyUnitsOfUniqueBookOfCart
 	
 	cashier := Cashier newWith: priceList.
 	
-	self assert: (cashier checkout: cart with: nil) equals: (3 * 15).! !
+	self assert: (cashier checkout: cart with: self createCreditCard) equals: (3 * 15).! !
 
-!CashierTest methodsFor: 'tests' stamp: 'MN 6/15/2025 22:36:22'!
+!CashierTest methodsFor: 'tests' stamp: 'MN 6/16/2025 11:03:10'!
 test03TotalCheckoutPriceIsSumOfPricesOfManyUnitsOfManyBooksOfCart
 
 	| priceList cashier cart |
@@ -74,9 +166,9 @@ test03TotalCheckoutPriceIsSumOfPricesOfManyUnitsOfManyBooksOfCart
 	
 	cashier := Cashier newWith: priceList.
 	
-	self assert: (cashier checkout: cart with: nil) equals: (3 * 15 + (5 * 10)).! !
+	self assert: (cashier checkout: cart with: self createCreditCard) equals: (3 * 15 + (5 * 10)).! !
 
-!CashierTest methodsFor: 'tests' stamp: 'MN 6/15/2025 22:36:22'!
+!CashierTest methodsFor: 'tests' stamp: 'MN 6/16/2025 11:03:10'!
 test04CannotCheckoutCartWithoutBooks
 
 	| priceList cashier cart |
@@ -88,10 +180,38 @@ test04CannotCheckoutCartWithoutBooks
 	cashier := Cashier newWith: priceList.
 		
 	self
-		should: [ cashier checkout: cart with: nil ]
+		should: [ cashier checkout: cart with: self createCreditCard ]
 		raise: Error
 		description: 'Cannot checkout shopping cart without books.'! !
 
+!CashierTest methodsFor: 'tests' stamp: 'MN 6/16/2025 11:05:44'!
+test05CannotCheckoutCartWithExpiredCreditCard
+
+	| priceList cashier cart |
+		
+	cart := ShoppingCart newWith: self createCatalogueWithBookAandB.
+	cart add: self createBookA totalUnits: 3.
+	
+	priceList := self createPriceList.
+	
+	cashier := Cashier newWith: priceList.
+	cashier setCurrentDate: (GregorianMonthOfYear marchOf: (GregorianYear number: 2027)).
+		
+	self
+		should: [ cashier checkout: cart with: self createCreditCard ]
+		raise: Error
+		withExceptionDo: [:error |
+			self assert: error messageText equals: 'Credit card is expired.'.
+		]! !
+
+
+!CashierTest methodsFor: 'creation' stamp: 'MN 6/16/2025 11:03:10'!
+createCreditCard
+
+	^ CreditCard
+		withNumber: 1111222233334444
+		ownerName: 'ALAN KAY'
+		expirationDate: (GregorianMonthOfYear februaryOf: (GregorianYear number: 2027))! !
 
 !CashierTest methodsFor: 'creation' stamp: 'MN 6/15/2025 21:42:28'!
 createPairsOfBooksAndPrices
@@ -108,7 +228,7 @@ createPriceList
 	^ Dictionary newFromPairs: self createPairsOfBooksAndPrices! !
 
 
-!classDefinition: #ShoppingCartTest category: #'TusLibros-com'!
+!classDefinition: #ShoppingCartTest category: 'TusLibros-com'!
 TusLibrosTest subclass: #ShoppingCartTest
 	instanceVariableNames: ''
 	classVariableNames: ''
@@ -227,9 +347,9 @@ test08CannotAddZeroOrNegativeNumberOfBooks
 
 
 
-!classDefinition: #Cashier category: #'TusLibros-com'!
+!classDefinition: #Cashier category: 'TusLibros-com'!
 Object subclass: #Cashier
-	instanceVariableNames: 'priceList'
+	instanceVariableNames: 'priceList currentDate'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros-com'!
@@ -242,22 +362,37 @@ assertCartIsNotEmpty: aShoppingCart
 	]! !
 
 
-!Cashier methodsFor: 'checkout' stamp: 'MN 6/15/2025 22:36:22'!
+!Cashier methodsFor: 'checkout' stamp: 'MN 6/16/2025 11:14:03'!
+assertCreditCardIsValid: aCreditCard
+
+	^ (aCreditCard isExpiredFor: currentDate) ifTrue:[
+		self error: 'Credit card is expired.'
+	]! !
+
+!Cashier methodsFor: 'checkout' stamp: 'MN 6/16/2025 11:14:03'!
 checkout: aShoppingCart with: aCreditCard 
 
 	self assertCartIsNotEmpty: aShoppingCart.
+	self assertCreditCardIsValid: aCreditCard.
 
 	^ aShoppingCart calculateTotalPriceWith: priceList. ! !
 
 
-!Cashier methodsFor: 'initialization' stamp: 'MN 6/15/2025 21:25:25'!
+!Cashier methodsFor: 'date' stamp: 'MN 6/16/2025 11:06:47'!
+setCurrentDate: aGregorianMonthOfYear
+
+	currentDate := aGregorianMonthOfYear.! !
+
+
+!Cashier methodsFor: 'initialization' stamp: 'MN 6/16/2025 11:06:08'!
 initializeWith: aPriceList
 
-	priceList := aPriceList.! !
+	priceList := aPriceList.
+	currentDate := GregorianMonthOfYear current.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'Cashier class' category: #'TusLibros-com'!
+!classDefinition: 'Cashier class' category: 'TusLibros-com'!
 Cashier class
 	instanceVariableNames: ''!
 
@@ -267,7 +402,106 @@ newWith: aPriceList
 	^ self new initializeWith: aPriceList.! !
 
 
-!classDefinition: #ShoppingCart category: #'TusLibros-com'!
+!classDefinition: #CreditCard category: 'TusLibros-com'!
+Object subclass: #CreditCard
+	instanceVariableNames: 'number ownerName expirationDate'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros-com'!
+
+!CreditCard methodsFor: 'testing' stamp: 'n 6/13/2025 20:46:28'!
+isExpired
+
+	^ expirationDate < GregorianMonthOfYear current
+
+! !
+
+!CreditCard methodsFor: 'testing' stamp: 'MN 6/16/2025 11:02:39'!
+isExpiredFor: aGregorianDate
+
+	^ expirationDate < aGregorianDate
+
+! !
+
+
+!CreditCard methodsFor: 'initialization' stamp: 'n 6/13/2025 20:43:45'!
+initializeWithNumber: aNumber ownerName: aName expirationDate: aDate.
+
+	number := aNumber.
+	ownerName := aName.
+	expirationDate := aDate.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'CreditCard class' category: 'TusLibros-com'!
+CreditCard class
+	instanceVariableNames: ''!
+
+!CreditCard class methodsFor: 'instance creation' stamp: 'n 6/13/2025 20:42:04'!
+withNumber: aNumber ownerName: aName expirationDate: aDate
+	
+	self assertCardNumberIsInteger: aNumber.
+	self assertCardNumberIsStrictlyPositive: aNumber.
+	self assertCardNumberIs16DigitsLong: aNumber.
+	
+	self assertOwnerNameIsString: aName.
+	self assertOwnerNameIsMax30CharsLong: aName.
+	
+	self assertExpirationDateIsGregorianDate: aDate.
+	self assertExpirationDateIsafterCurrentDate: aDate.
+
+	^self new initializeWithNumber: aNumber ownerName: aName expirationDate: aDate.! !
+
+
+!CreditCard class methodsFor: 'assertions' stamp: 'n 6/13/2025 19:36:08'!
+assertCardNumberIs16DigitsLong: aNumber
+
+	^ aNumber asString size = 16 ifFalse:[
+		self error: 'Credit card number must be 16 digits long'.
+	]! !
+
+!CreditCard class methodsFor: 'assertions' stamp: 'n 6/13/2025 19:34:18'!
+assertCardNumberIsInteger: aNumber 
+	aNumber isInteger ifFalse: [
+		self error: 'Credit card number must be integer'.
+	].! !
+
+!CreditCard class methodsFor: 'assertions' stamp: 'n 6/13/2025 19:38:13'!
+assertCardNumberIsStrictlyPositive: aNumber 
+	aNumber strictlyPositive ifFalse: [
+		self error: 'Credit card number must be strictly positive'.
+	].! !
+
+!CreditCard class methodsFor: 'assertions' stamp: 'n 6/13/2025 20:31:45'!
+assertExpirationDateIsGregorianDate: aDate
+
+	aDate class = GregorianMonthOfYear ifFalse:[
+		self error: 'Expiration date must be gregorian'.
+	]! !
+
+!CreditCard class methodsFor: 'assertions' stamp: 'n 6/13/2025 20:40:38'!
+assertExpirationDateIsafterCurrentDate: aDate
+
+	aDate < GregorianMonthOfYear current ifTrue:[
+		self error: 'Expiration date must be after current date'.
+	]! !
+
+!CreditCard class methodsFor: 'assertions' stamp: 'n 6/13/2025 19:57:37'!
+assertOwnerNameIsMax30CharsLong: aName
+
+	^ aName size <= 30 ifFalse:[
+		self error: 'Owner name must be max 30 characters long'.
+	]! !
+
+!CreditCard class methodsFor: 'assertions' stamp: 'n 6/13/2025 19:53:01'!
+assertOwnerNameIsString: aName
+
+	^ aName isString ifFalse: [
+		self error: 'Owner name must be string'.
+	]! !
+
+
+!classDefinition: #ShoppingCart category: 'TusLibros-com'!
 Object subclass: #ShoppingCart
 	instanceVariableNames: 'books catalogue'
 	classVariableNames: ''
@@ -347,7 +581,7 @@ calculateTotalPriceWith: aPriceList
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'ShoppingCart class' category: #'TusLibros-com'!
+!classDefinition: 'ShoppingCart class' category: 'TusLibros-com'!
 ShoppingCart class
 	instanceVariableNames: ''!
 
