@@ -97,25 +97,35 @@ TestCase subclass: #TusLibrosTest
 	poolDictionaries: ''
 	category: 'TusLibros-com'!
 
-!TusLibrosTest methodsFor: 'creation' stamp: 'MN 6/15/2025 21:11:20'!
-createBookA
+!TusLibrosTest methodsFor: 'creation' stamp: 'MN 6/17/2025 09:42:45'!
+bookA
 
 	^ 'Book A'! !
 
-!TusLibrosTest methodsFor: 'creation' stamp: 'MN 6/15/2025 21:11:28'!
-createBookB
+!TusLibrosTest methodsFor: 'creation' stamp: 'MN 6/17/2025 09:42:51'!
+bookB
 
 	^ 'Book B'! !
 
-!TusLibrosTest methodsFor: 'creation' stamp: 'MN 6/15/2025 21:11:33'!
-createCatalogueWithBookA
+!TusLibrosTest methodsFor: 'creation' stamp: 'MN 6/17/2025 10:38:21'!
+bookC
 
-	^ Set with: self createBookA.! !
+	^ 'Book C'! !
 
-!TusLibrosTest methodsFor: 'creation' stamp: 'MN 6/15/2025 21:11:36'!
-createCatalogueWithBookAandB
+!TusLibrosTest methodsFor: 'creation' stamp: 'MN 6/17/2025 09:43:01'!
+catalogueWithBookA
 
-	^ Set with: self createBookA with: self createBookB.! !
+	^ Set with: self bookA.! !
+
+!TusLibrosTest methodsFor: 'creation' stamp: 'MN 6/17/2025 10:43:20'!
+catalogueWithBookAandB
+
+	^ Set with: self bookA with: self bookB.! !
+
+!TusLibrosTest methodsFor: 'creation' stamp: 'MN 6/17/2025 10:43:29'!
+catalogueWithBookAandBandC
+	
+	^ Set with: self bookA with: self bookB with: self bookC.! !
 
 
 !classDefinition: #CashierTest category: 'TusLibros-com'!
@@ -125,107 +135,126 @@ TusLibrosTest subclass: #CashierTest
 	poolDictionaries: ''
 	category: 'TusLibros-com'!
 
-!CashierTest methodsFor: 'tests' stamp: 'MN 6/16/2025 11:03:10'!
+!CashierTest methodsFor: 'tests' stamp: 'MN 6/17/2025 09:42:45'!
 test01TotalCheckoutPriceIsPriceAndSingleUnitOfUniqueBookOfCart
 
-	| priceList cashier cart |
-		
-	cart := ShoppingCart newWith: self createCatalogueWithBookA.
-	cart add: (self createBookA) totalUnits: 1.
-	
-	priceList := self createPriceList.
-	
-	cashier := Cashier newWith: priceList.
-	
-	self assert: (cashier checkout: cart with: self createCreditCard ) equals: 15.! !
+	self
+		assertTotalCheckoutPriceIs: 15
+		afterDoingForCart: [:aCart |
+			aCart add: self bookA totalUnits: 1. 
+		]! !
 
-!CashierTest methodsFor: 'tests' stamp: 'MN 6/16/2025 11:03:10'!
+!CashierTest methodsFor: 'tests' stamp: 'MN 6/17/2025 09:43:58'!
 test02TotalCheckoutPriceIsProductOfPriceAndManyUnitsOfUniqueBookOfCart
 
-	| priceList cashier cart |
-		
-	cart := ShoppingCart newWith: self createCatalogueWithBookA.
-	cart add: (self createBookA) totalUnits: 3.
-	
-	priceList := self createPriceList.
-	
-	cashier := Cashier newWith: priceList.
-	
-	self assert: (cashier checkout: cart with: self createCreditCard) equals: (3 * 15).! !
+	self
+		assertTotalCheckoutPriceIs: (3*15)
+		afterDoingForCart: [:aCart |
+			aCart add: self bookA totalUnits: 3. 
+		]! !
 
-!CashierTest methodsFor: 'tests' stamp: 'MN 6/16/2025 11:03:10'!
+!CashierTest methodsFor: 'tests' stamp: 'MN 6/17/2025 09:44:39'!
 test03TotalCheckoutPriceIsSumOfPricesOfManyUnitsOfManyBooksOfCart
 
-	| priceList cashier cart |
-		
-	cart := ShoppingCart newWith: self createCatalogueWithBookAandB .
-	cart add: (self createBookA) totalUnits: 3.
-	cart add: (self createBookB) totalUnits: 5.
-	
-	priceList := self createPriceList.
-	
-	cashier := Cashier newWith: priceList.
-	
-	self assert: (cashier checkout: cart with: self createCreditCard) equals: (3 * 15 + (5 * 10)).! !
+	self
+		assertTotalCheckoutPriceIs: (3*15 + (5*10))
+		afterDoingForCart: [:aCart |
+			aCart add: self bookA totalUnits: 3.
+			aCart add: self bookB totalUnits: 5.
+		]! !
 
-!CashierTest methodsFor: 'tests' stamp: 'MN 6/16/2025 11:03:10'!
+!CashierTest methodsFor: 'tests' stamp: 'MN 6/17/2025 10:40:59'!
 test04CannotCheckoutCartWithoutBooks
 
 	| priceList cashier cart |
 		
-	cart := ShoppingCart newWith: self createCatalogueWithBookAandB .
+	cart := ShoppingCart newWith: self catalogueWithBookAandB .
 	
-	priceList := self createPriceList.
+	priceList := self priceListForBookAandB.
 	
 	cashier := Cashier newWith: priceList.
 		
 	self
-		should: [ cashier checkout: cart with: self createCreditCard ]
+		should: [ cashier checkout: cart with: self creditCard ]
 		raise: Error
 		description: 'Cannot checkout shopping cart without books.'! !
 
-!CashierTest methodsFor: 'tests' stamp: 'MN 6/16/2025 11:05:44'!
+!CashierTest methodsFor: 'tests' stamp: 'MN 6/17/2025 10:40:59'!
 test05CannotCheckoutCartWithExpiredCreditCard
 
 	| priceList cashier cart |
 		
-	cart := ShoppingCart newWith: self createCatalogueWithBookAandB.
-	cart add: self createBookA totalUnits: 3.
+	cart := ShoppingCart newWith: self catalogueWithBookAandB.
+	cart add: self bookA totalUnits: 3.
 	
-	priceList := self createPriceList.
+	priceList := self priceListForBookAandB.
 	
 	cashier := Cashier newWith: priceList.
 	cashier setCurrentDate: (GregorianMonthOfYear marchOf: (GregorianYear number: 2027)).
 		
 	self
-		should: [ cashier checkout: cart with: self createCreditCard ]
+		should: [ cashier checkout: cart with: self creditCard ]
 		raise: Error
 		withExceptionDo: [:error |
 			self assert: error messageText equals: 'Credit card is expired.'.
 		]! !
 
+!CashierTest methodsFor: 'tests' stamp: 'MN 6/17/2025 10:46:20'!
+test06CannotCheckoutCartWithBooksThatAreNotInThePriceList
 
-!CashierTest methodsFor: 'creation' stamp: 'MN 6/16/2025 11:03:10'!
-createCreditCard
+	| priceList cashier cart |
+		
+	cart := ShoppingCart newWith: self catalogueWithBookAandBandC.
+	cart add: self bookC totalUnits: 3.
+	
+	priceList := self priceListForBookAandB.
+	
+	cashier := Cashier newWith: priceList.
+		
+	self
+		should: [ cashier checkout: cart with: self creditCard ]
+		raise: Error
+		withExceptionDo: [:error |
+			self assert: error messageText equals: 'Book is not in the price list'.
+		]! !
+
+
+!CashierTest methodsFor: 'creation' stamp: 'MN 6/17/2025 09:42:51'!
+createPairsOfBooksAndPrices
+
+	^ Array
+			with: self bookA
+			with: 15
+			with: self bookB
+			with: 10! !
+
+!CashierTest methodsFor: 'creation' stamp: 'MN 6/17/2025 09:43:18'!
+creditCard
 
 	^ CreditCard
 		withNumber: 1111222233334444
 		ownerName: 'ALAN KAY'
 		expirationDate: (GregorianMonthOfYear februaryOf: (GregorianYear number: 2027))! !
 
-!CashierTest methodsFor: 'creation' stamp: 'MN 6/15/2025 21:42:28'!
-createPairsOfBooksAndPrices
-
-	^ Array
-			with: self createBookA
-			with: 15
-			with: self createBookB
-			with: 10! !
-
-!CashierTest methodsFor: 'creation' stamp: 'MN 6/15/2025 21:42:21'!
-createPriceList
+!CashierTest methodsFor: 'creation' stamp: 'MN 6/17/2025 10:40:59'!
+priceListForBookAandB
 
 	^ Dictionary newFromPairs: self createPairsOfBooksAndPrices! !
+
+
+!CashierTest methodsFor: 'assertions' stamp: 'MN 6/17/2025 10:40:59'!
+assertTotalCheckoutPriceIs: aTotalPrice afterDoingForCart: aBlock
+
+	| priceList cashier cart |
+		
+	cart := ShoppingCart newWith: self catalogueWithBookAandB .
+	aBlock value: cart.
+	
+	priceList := self priceListForBookAandB.
+	
+	cashier := Cashier newWith: priceList.
+	
+	self assert: (cashier totalCheckoutPrice: cart) equals: aTotalPrice.! !
 
 
 !classDefinition: #ShoppingCartTest category: 'TusLibros-com'!
@@ -235,47 +264,47 @@ TusLibrosTest subclass: #ShoppingCartTest
 	poolDictionaries: ''
 	category: 'TusLibros-com'!
 
-!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/12/2025 13:06:25'!
+!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/17/2025 09:43:01'!
 test01ShoppingCartShouldStartEmpty
 
 	| cart |
 	
-	cart := ShoppingCart newWith: self createCatalogueWithBookA.
+	cart := ShoppingCart newWith: self catalogueWithBookA.
 	
 	self assert: cart isEmpty! !
 
-!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/12/2025 13:15:12'!
+!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/17/2025 09:43:01'!
 test02ShoppingCartWithOneBookIsNotEmpty
 
 	| aCart bookA |
 	
-	aCart := ShoppingCart newWith: self createCatalogueWithBookA.
-	bookA := self createBookA.
+	aCart := ShoppingCart newWith: self catalogueWithBookA.
+	bookA := self bookA.
 	
 	aCart add: bookA totalUnits: 1.
 	
 	self deny: aCart isEmpty! !
 
-!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/12/2025 13:15:07'!
+!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/17/2025 09:43:01'!
 test03BookOfShoppingCartWithOneBookCanBeQueried
 
 	| aCart bookA |
 	
-	aCart := ShoppingCart newWith: self createCatalogueWithBookA.
-	bookA := self createBookA.
+	aCart := ShoppingCart newWith: self catalogueWithBookA.
+	bookA := self bookA.
 	
 	aCart add: bookA totalUnits: 1.
 	
 	self assert: (aCart hasBook: bookA totalUnits: 1)! !
 
-!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/12/2025 13:15:02'!
+!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/17/2025 09:43:08'!
 test04BooksOfShoppingCartWithManyBooksCanBeQueried
 
 	| aCart bookA bookB |
 	
-	aCart := ShoppingCart newWith: self createCatalogueWithBookAandB.
-	bookA := self createBookA.
-	bookB := self createBookB.
+	aCart := ShoppingCart newWith: self catalogueWithBookAandB.
+	bookA := self bookA.
+	bookB := self bookB.
 	
 	aCart add: bookA totalUnits: 2.
 	aCart add: bookB totalUnits: 3.
@@ -283,14 +312,14 @@ test04BooksOfShoppingCartWithManyBooksCanBeQueried
 	self assert: (aCart hasBook: bookA totalUnits: 2).
 	self assert: (aCart hasBook: bookB totalUnits: 3).! !
 
-!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/12/2025 13:14:50'!
+!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/17/2025 09:43:08'!
 test05CanRemoveBooksFromShoppingCart
 
 	| aCart bookA bookB |
 	
-	aCart := ShoppingCart newWith: self createCatalogueWithBookAandB.
-	bookA := self createBookA.
-	bookB := self createBookB.
+	aCart := ShoppingCart newWith: self catalogueWithBookAandB.
+	bookA := self bookA.
+	bookB := self bookB.
 	
 	aCart add: bookA totalUnits: 1.
 	aCart remove: bookA totalUnits: 1.
@@ -301,28 +330,28 @@ test05CanRemoveBooksFromShoppingCart
 	self assert: (aCart hasBook: bookB totalUnits: 1).
 	self deny: (aCart hasBook: bookA).! !
 
-!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/12/2025 13:16:54'!
+!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/17/2025 09:43:01'!
 test06OnlyCanAddBooksFromCatalogueToShoppingCart
 
 	| aCart bookB |
 	
-	aCart := ShoppingCart newWith: self createCatalogueWithBookA.
+	aCart := ShoppingCart newWith: self catalogueWithBookA.
 	
-	bookB := self createBookB.
+	bookB := self bookB.
 		
 	self
 		should: [ 	aCart add: bookB totalUnits: 1 ]
 		raise: Error
 		withMessageText: 'Only can add books from catalogue'.! !
 
-!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/12/2025 13:21:19'!
+!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/17/2025 09:43:01'!
 test07CannotRemoveUnexistentBooksFromShoppingCart
 
 	| aCart bookA |
 	
-	aCart := ShoppingCart newWith: self createCatalogueWithBookA.
+	aCart := ShoppingCart newWith: self catalogueWithBookA.
 	
-	bookA := self createBookA.
+	bookA := self bookA.
 		
 	aCart add: bookA totalUnits: 2.
 	
@@ -331,14 +360,14 @@ test07CannotRemoveUnexistentBooksFromShoppingCart
 		raise: Error
 		withMessageText: 'Cannot remove unexistent books'.! !
 
-!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/15/2025 20:35:10'!
+!ShoppingCartTest methodsFor: 'tests' stamp: 'MN 6/17/2025 09:43:01'!
 test08CannotAddZeroOrNegativeNumberOfBooks
 
 	| aCart bookA |
 	
-	aCart := ShoppingCart newWith: self createCatalogueWithBookA.
+	aCart := ShoppingCart newWith: self catalogueWithBookA.
 	
-	bookA := self createBookA.
+	bookA := self bookA.
 	
 	self
 		should: [ aCart add: bookA totalUnits: -2. ]
@@ -349,7 +378,7 @@ test08CannotAddZeroOrNegativeNumberOfBooks
 
 !classDefinition: #Cashier category: 'TusLibros-com'!
 Object subclass: #Cashier
-	instanceVariableNames: 'priceList currentDate'
+	instanceVariableNames: 'priceList currentDate totalPrice'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros-com'!
@@ -361,21 +390,48 @@ assertCartIsNotEmpty: aShoppingCart
 		self error: 'Cannot checkout shopping cart without books.'
 	]! !
 
-
-!Cashier methodsFor: 'checkout' stamp: 'MN 6/16/2025 11:14:03'!
+!Cashier methodsFor: 'assertions' stamp: 'MN 6/16/2025 11:14:03'!
 assertCreditCardIsValid: aCreditCard
 
 	^ (aCreditCard isExpiredFor: currentDate) ifTrue:[
 		self error: 'Credit card is expired.'
 	]! !
 
-!Cashier methodsFor: 'checkout' stamp: 'MN 6/16/2025 11:14:03'!
+
+!Cashier methodsFor: 'checkout' stamp: 'MN 6/17/2025 10:33:33'!
 checkout: aShoppingCart with: aCreditCard 
+	
+	totalPrice := 0.
 
 	self assertCartIsNotEmpty: aShoppingCart.
 	self assertCreditCardIsValid: aCreditCard.
 
-	^ aShoppingCart calculateTotalPriceWith: priceList. ! !
+	^ self totalCheckoutPrice: aShoppingCart.! !
+
+!Cashier methodsFor: 'checkout' stamp: 'MN 6/17/2025 10:45:56'!
+priceFor: aBook
+
+	^ priceList
+		at: aBook
+		ifAbsent:[
+			self error: 'Book is not in the price list'.
+		]! !
+
+!Cashier methodsFor: 'checkout' stamp: 'MN 6/17/2025 10:45:56'!
+sumPriceOf: aBook
+
+	| bookPrice |
+	
+	bookPrice := self priceFor: aBook.
+	
+	totalPrice := totalPrice + bookPrice.! !
+
+!Cashier methodsFor: 'checkout' stamp: 'MN 6/17/2025 10:33:23'!
+totalCheckoutPrice: aShoppingCart
+
+	aShoppingCart totalPriceFor: self.
+	
+	^ totalPrice.! !
 
 
 !Cashier methodsFor: 'date' stamp: 'MN 6/16/2025 11:06:47'!
@@ -384,9 +440,10 @@ setCurrentDate: aGregorianMonthOfYear
 	currentDate := aGregorianMonthOfYear.! !
 
 
-!Cashier methodsFor: 'initialization' stamp: 'MN 6/16/2025 11:06:08'!
+!Cashier methodsFor: 'initialization' stamp: 'MN 6/17/2025 10:36:43'!
 initializeWith: aPriceList
-
+	
+	totalPrice := 0.
 	priceList := aPriceList.
 	currentDate := GregorianMonthOfYear current.! !
 
@@ -574,10 +631,12 @@ errorOnlyCanAddBooksFromCatalogue
 	^ self error: 'Only can add books from catalogue'! !
 
 
-!ShoppingCart methodsFor: 'total price' stamp: 'MN 6/15/2025 22:33:09'!
-calculateTotalPriceWith: aPriceList
-
-	^ books sum: [:eachBook | (aPriceList at: eachBook)]! !
+!ShoppingCart methodsFor: 'total price' stamp: 'MN 6/17/2025 10:32:55'!
+totalPriceFor: aCashier
+	
+	books do: [:eachBook |
+		aCashier sumPriceOf: eachBook.	
+	].! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
